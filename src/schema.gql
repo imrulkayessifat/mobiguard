@@ -1,0 +1,67 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type File {
+  created_at: DateTime!
+  id: Int!
+  lost_id: Int!
+  name: String!
+  updated_at: DateTime!
+  url: String!
+}
+
+type Imei {
+  brand: String!
+  created_at: DateTime!
+  id: Int!
+  imei_number: String!
+  model: String!
+  updated_at: DateTime!
+  user_id: Int!
+}
+
+type Mutation {
+  createFile(lost_id: Int!, name: String!, url: String!): File!
+  createImei(brand: String!, imei_number: String!, model: String!, user_id: Int!): Imei!
+  createOtp(phone_no: String!): Otp!
+  createUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, last_name: String!, phone_no: String!): User!
+  removeImei(id: Float!): Imei!
+  updateUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, id: Float!, last_name: String!): User!
+}
+
+type Otp {
+  created_at: DateTime!
+  emergency_contact: String!
+  expire_time: DateTime!
+  id: Int!
+  otp_code: String!
+  phone_no: String!
+  updated_at: DateTime!
+}
+
+type Query {
+  filesByLostId(lost_id: Int!): [File!]!
+  imei(imei_number: String!): Imei!
+  userByPhoneNo(phone_no: String!): User
+  userImeis(user_id: Int!): [Imei!]!
+  validateOtp(otp_code: String!, phone_no: String!): Otp!
+}
+
+type User {
+  address: String
+  contact_email: String
+  created_at: DateTime!
+  emergency_contact: String
+  first_name: String
+  id: Int!
+  imeis: [Imei!]!
+  last_name: String
+  phone_no: String!
+  updated_at: DateTime!
+}

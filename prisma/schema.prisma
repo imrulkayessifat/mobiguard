@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Flag {
+  LOST
+  FOUND
+}
+
+model Otp {
+  id                Int      @id @default(autoincrement())
+  phone_no          String   @unique
+  emergency_contact String?  @unique
+  otp_code          String
+  expire_time       DateTime
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  userByPhone       User?    @relation("PhoneNoRelation", fields: [phone_no], references: [phone_no])
+  userByEmergency   User?    @relation("EmergencyContactRelation", fields: [emergency_contact], references: [emergency_contact])
+}
+
+model User {
+  id                Int      @id @default(autoincrement())
+  first_name        String?
+  last_name         String?
+  phone_no          String   @unique
+  contact_email     String?  @unique
+  emergency_contact String?  @unique
+  address           String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  otpByPhone        Otp?     @relation("PhoneNoRelation")
+  otpByEmergency    Otp?     @relation("EmergencyContactRelation")
+  imeis             Imei[]
+}
+
+model Imei {
+  id          Int      @id @default(autoincrement())
+  imei_number String   @unique
+  brand       String
+  model       String
+  user_id     Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  user        User     @relation(fields: [user_id], references: [id])
+  losts       Lost[]   @relation("ImeiToLost")
+}
+
+model Lost {
+  id         Int      @id @default(autoincrement())
+  imei_id    Int
+  flag       Flag     @default(FOUND)
+  gd_number  String
+  phone_no   String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  imei       Imei     @relation("ImeiToLost", fields: [imei_id], references: [id])
+  files      File[]   @relation("LostToFile")
+}
+
+model File {
+  id      Int    @id @default(autoincrement())
+  url     String
+  name    String
+  lost_id Int
+  lost    Lost   @relation("LostToFile", fields: [lost_id], references: [id])
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}

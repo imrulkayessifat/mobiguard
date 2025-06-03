@@ -1,0 +1,53 @@
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+
+import { User } from './dto/user.dto';
+import { UserService } from './user.service';
+import { ParseIntPipe } from '@nestjs/common';
+
+@Resolver(() => User)
+export class UserResolver {
+  constructor(private userService: UserService) {}
+
+  @Mutation(() => User, { name: 'createUser' })
+  async createUser(
+    @Args('first_name') first_name: string,
+    @Args('last_name') last_name: string,
+    @Args('phone_no') phone_no: string,
+    @Args('contact_email') contact_email: string,
+    @Args('emergency_contact') emergency_contact: string,
+    @Args('address') address: string,
+  ) {
+    return await this.userService.createUser({
+      first_name,
+      last_name,
+      phone_no,
+      contact_email,
+      emergency_contact,
+      address,
+    });
+  }
+
+  @Query(() => User, { nullable: true })
+  async userByPhoneNo(@Args('phone_no') phone_no: string) {
+    return await this.userService.findUserByPhoneNo(phone_no);
+  }
+
+  @Mutation(() => User, { name: 'updateUser' })
+  async updateUser(
+    @Args('id', ParseIntPipe) id: number,
+    @Args('first_name') first_name: string,
+    @Args('last_name') last_name: string,
+    @Args('contact_email') contact_email: string,
+    @Args('emergency_contact') emergency_contact: string,
+    @Args('address') address: string,
+  ) {
+    return await this.userService.update(
+      id,
+      first_name,
+      last_name,
+      contact_email,
+      emergency_contact,
+      address,
+    );
+  }
+}
