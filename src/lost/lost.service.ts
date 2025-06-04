@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { Injectable, BadRequestException } from '@nestjs/common';
@@ -64,6 +61,17 @@ export class LostService {
   async findLostsByImeiId(imei_id: number) {
     return await this.prisma.lost.findMany({
       where: { imei_id },
+    });
+  }
+
+  async update(id: number, flag: Flag) {
+    return await this.prisma.lost.update({
+      where: {
+        id,
+      },
+      data: {
+        flag,
+      },
     });
   }
 }

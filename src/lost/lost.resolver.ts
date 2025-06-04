@@ -33,4 +33,12 @@ export class LostResolver {
   async lostsByImeiId(@Args('imei_id', { type: () => Int }) imei_id: number) {
     return await this.lostService.findLostsByImeiId(imei_id);
   }
+
+  @Query(() => [Lost])
+  async update(
+    @Args('id', { type: () => Int }) id: number,
+    @Args('flag') flag: Flag,
+  ) {
+    return await this.lostService.update(id, flag);
+  }
 }
