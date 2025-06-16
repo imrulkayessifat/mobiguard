@@ -1,22 +1,21 @@
-import { UseInterceptors, UploadedFiles } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
 
 import { Lost, Flag } from './dto/lost.dto';
 import { LostService } from './lost.service';
+import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 @Resolver(() => Lost)
 export class LostResolver {
   constructor(private lostService: LostService) {}
 
-  @Mutation(() => Lost)
-  @UseInterceptors(FileFieldsInterceptor([{ name: 'files', maxCount: 10 }]))
+  @Mutation(() => Lost, { name: 'createLost' })
   async createLost(
     @Args('gd_number') gd_number: string,
     @Args('phone_no') phone_no: string,
     @Args('flag') flag: Flag,
     @Args('imei_id', { type: () => Int }) imei_id: number,
-    @UploadedFiles() files: { files: Express.Multer.File[] },
+    @Args('files', { type: () => [GraphQLUpload], nullable: true })
+    files?: FileUpload[],
   ) {
     return await this.lostService.createLost(
       {
@@ -25,7 +24,7 @@ export class LostResolver {
         flag,
         imei_id,
       },
-      files.files || [],
+      files || [],
     );
   }
 
@@ -34,8 +33,8 @@ export class LostResolver {
     return await this.lostService.findLostsByImeiId(imei_id);
   }
 
-  @Query(() => [Lost])
-  async update(
+  @Query(() => Lost)
+  async updateFlag(
     @Args('id', { type: () => Int }) id: number,
     @Args('flag') flag: Flag,
   ) {

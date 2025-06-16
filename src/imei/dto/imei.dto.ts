@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Lost } from 'src/lost/dto/lost.dto';
 
 @ObjectType()
 export class Imei {
@@ -22,4 +23,7 @@ export class Imei {
 
   @Field(() => Int)
   user_id: number;
+
+  @Field(() => [Lost], { nullable: true })
+  losts?: Lost[];
 }

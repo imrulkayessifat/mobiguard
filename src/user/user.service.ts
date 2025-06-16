@@ -62,7 +62,7 @@ export class UserService {
     }
 
     // Update the user with provided fields
-    return this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: {
         first_name,
@@ -72,5 +72,16 @@ export class UserService {
         address,
       },
     });
+
+    await this.prisma.otp.update({
+      where: {
+        phone_no: user.phone_no,
+      },
+      data: {
+        emergency_contact,
+      },
+    });
+
+    return user;
   }
 }

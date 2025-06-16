@@ -19,12 +19,16 @@ export class ImeiService {
   }
 
   async findImeisByUserId(user_id: number) {
-    return await this.prisma.imei.findMany({
+    const data = await this.prisma.imei.findMany({
       where: { user_id },
+      include: {
+        losts: true,
+      },
       orderBy: {
         created_at: 'asc',
       },
     });
+    return data;
   }
 
   async findOne(imei_number: string) {

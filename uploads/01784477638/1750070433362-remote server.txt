@@ -1,0 +1,1 @@
+sudo rsync -avz -e ssh sifat@app.photooptima.com:/ /home/imrul/Music/demo/

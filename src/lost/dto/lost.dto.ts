@@ -1,9 +1,15 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
+import { File } from 'src/file/dto/file.dto';
 
 export enum Flag {
   LOST = 'LOST',
   FOUND = 'FOUND',
 }
+
+// Register the enum with GraphQL
+registerEnumType(Flag, {
+  name: 'Flag', // this is the name that will be used in the schema
+});
 
 @ObjectType()
 export class Lost {
@@ -16,7 +22,7 @@ export class Lost {
   @Field()
   phone_no: string;
 
-  @Field()
+  @Field(() => Flag) // Explicitly specify the enum type
   flag: Flag;
 
   @Field()
@@ -27,4 +33,7 @@ export class Lost {
 
   @Field(() => Int)
   imei_id: number;
+
+  @Field(() => [File], { nullable: true })
+  files?: File[];
 }
