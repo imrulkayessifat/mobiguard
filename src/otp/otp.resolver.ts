@@ -2,6 +2,7 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 
 import { Otp } from './dto/otp.dto';
 import { OtpService } from './otp.service';
+import { LoginResponse } from './dto/login-response.dto';
 
 @Resolver(() => Otp)
 export class OtpResolver {
@@ -12,7 +13,7 @@ export class OtpResolver {
     return await this.otpService.createOtp(phone_no);
   }
 
-  @Query(() => Otp)
+  @Query(() => LoginResponse)
   async validateOtp(
     @Args('phone_no') phone_no: string,
     @Args('otp_code') otp_code: string,

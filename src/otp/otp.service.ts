@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,6 +9,7 @@ export class OtpService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
+    private jwtService: JwtService,
   ) {}
 
   async createOtp(phone_no: string) {
@@ -54,16 +56,61 @@ export class OtpService {
   }
 
   async validateOtp(phone_no: string, otp_code: string) {
-    const otp = await this.prisma.otp.findFirst({
-      where: {
-        OR: [{ phone_no }, { emergency_contact: phone_no }],
-      },
-    });
+    try {
+      const otp = await this.prisma.otp.findFirst({
+        where: {
+          OR: [{ phone_no }, { emergency_contact: phone_no }],
+        },
+      });
 
-    if (!otp || otp.otp_code !== otp_code || otp.expire_time < new Date()) {
-      throw new Error('Invalid or expired OTP');
+      if (!otp || otp.otp_code !== otp_code || otp.expire_time < new Date()) {
+        return {
+          access_token: null,
+          user: null,
+          message: 'Invalid or expired OTP',
+          success: false,
+          error: 'INVALID_OTP',
+        };
+      }
+
+      // Get user details
+      const user = await this.userService.findUserByPhoneNo(phone_no);
+
+      if (!user) {
+        return {
+          access_token: null,
+          user: null,
+          message: 'User not found',
+          success: false,
+          error: 'USER_NOT_FOUND',
+        };
+      }
+
+      // Generate JWT token
+      const payload = {
+        sub: user.id,
+        ...user,
+      };
+
+      const access_token = this.jwtService.sign(payload);
+
+      return {
+        access_token,
+        user,
+        message: 'OTP validated successfully',
+        success: true,
+        error: null,
+      };
+    } catch (error: unknown) {
+      const error_message =
+        error instanceof Error ? error.message : 'UNKNOWN_ERROR';
+      return {
+        access_token: null,
+        user: null,
+        message: 'An error occurred during OTP validation',
+        success: false,
+        error: error_message,
+      };
     }
-
-    return otp;
   }
 }

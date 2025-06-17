@@ -29,7 +29,16 @@ type Imei {
   losts: [Lost!]
   model: String!
   updated_at: DateTime!
+  user: User!
   user_id: Int!
+}
+
+type LoginResponse {
+  access_token: String
+  error: String
+  message: String!
+  success: Boolean!
+  user: User
 }
 
 type Lost {
@@ -50,7 +59,7 @@ type Mutation {
   createOtp(phone_no: String!): Otp!
   createUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, last_name: String!, phone_no: String!): User!
   removeImei(id: Float!): Imei!
-  updateUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, id: Float!, last_name: String!): User!
+  updateUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, id: Float!, last_name: String!): UserResponse!
 }
 
 type Otp {
@@ -70,7 +79,7 @@ type Query {
   updateFlag(flag: String!, id: Int!): Lost!
   userByPhoneNo(phone_no: String!): User
   userImeis(user_id: Int!): [Imei!]!
-  validateOtp(otp_code: String!, phone_no: String!): Otp!
+  validateOtp(otp_code: String!, phone_no: String!): LoginResponse!
 }
 
 """The `Upload` scalar type represents a file upload."""
@@ -87,4 +96,11 @@ type User {
   last_name: String
   phone_no: String!
   updated_at: DateTime!
+}
+
+type UserResponse {
+  error: String
+  message: String!
+  success: Boolean!
+  user: User
 }

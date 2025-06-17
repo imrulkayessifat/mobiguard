@@ -6,6 +6,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 
 import { AppService } from './app.service';
 import { OtpModule } from './otp/otp.module';
+import { AuthModule } from './auth/auth.module';
 import { ImeiModule } from './imei/imei.module';
 import { UserModule } from './user/user.module';
 import { LostModule } from './lost/lost.module';
@@ -26,6 +27,7 @@ import { PrismaModule } from './prisma/prisma.module';
       dest: './uploads',
     }),
     OtpModule,
+    AuthModule,
     UserModule,
     ImeiModule,
     LostModule,

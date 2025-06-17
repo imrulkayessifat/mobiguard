@@ -1,14 +1,18 @@
 import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 
 import { User } from './dto/user.dto';
+import { UserResponse } from './dto/user-response.dto';
 import { UserService } from './user.service';
 import { ParseIntPipe } from '@nestjs/common';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(private userService: UserService) {}
 
   @Mutation(() => User, { name: 'createUser' })
+  @UseGuards(JwtAuthGuard)
   async createUser(
     @Args('first_name') first_name: string,
     @Args('last_name') last_name: string,
@@ -28,11 +32,13 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
+  @UseGuards(JwtAuthGuard)
   async userByPhoneNo(@Args('phone_no') phone_no: string) {
     return await this.userService.findUserByPhoneNo(phone_no);
   }
 
-  @Mutation(() => User, { name: 'updateUser' })
+  @Mutation(() => UserResponse, { name: 'updateUser' })
+  @UseGuards(JwtAuthGuard)
   async updateUser(
     @Args('id', ParseIntPipe) id: number,
     @Args('first_name') first_name: string,

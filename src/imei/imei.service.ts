@@ -36,6 +36,9 @@ export class ImeiService {
       where: {
         imei_number,
       },
+      include: {
+        user: true,
+      },
     });
 
     if (!imei) {

@@ -1,14 +1,17 @@
 import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
 import { ParseIntPipe } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 
 import { Imei } from './dto/imei.dto';
 import { ImeiService } from './imei.service';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Resolver(() => Imei)
 export class ImeiResolver {
   constructor(private imeiService: ImeiService) {}
 
   @Mutation(() => Imei, { name: 'createImei' })
+  @UseGuards(JwtAuthGuard)
   async createImei(
     @Args('imei_number') imei_number: string,
     @Args('brand') brand: string,
@@ -24,6 +27,7 @@ export class ImeiResolver {
   }
 
   @Query(() => [Imei], { name: 'userImeis' })
+  @UseGuards(JwtAuthGuard)
   async imeisByUserId(@Args('user_id', { type: () => Int }) user_id: number) {
     return await this.imeiService.findImeisByUserId(user_id);
   }
@@ -34,6 +38,7 @@ export class ImeiResolver {
   }
 
   @Mutation(() => Imei, { name: 'removeImei' })
+  @UseGuards(JwtAuthGuard)
   async remove(@Args('id', ParseIntPipe) id: number) {
     return await this.imeiService.remove(id);
   }

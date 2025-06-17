@@ -35,53 +35,78 @@ export class UserService {
     emergency_contact?: string,
     address?: string,
   ) {
-    // Validate contact_email uniqueness if provided
-    if (contact_email) {
-      const existingEmail = await this.prisma.user.findFirst({
-        where: {
+    try {
+      // Validate contact_email uniqueness if provided
+      if (contact_email) {
+        const existingEmail = await this.prisma.user.findFirst({
+          where: {
+            contact_email,
+            NOT: { id }, // Exclude the current user
+          },
+        });
+        if (existingEmail) {
+          return {
+            message: 'Contact email is already in use',
+            success: false,
+            error: 'EMAIL_ALREADY_EXISTS',
+            user: null,
+          };
+        }
+      }
+
+      // Validate emergency_contact uniqueness if provided and not null
+      if (emergency_contact !== undefined && emergency_contact !== null) {
+        const existingEmergencyContact = await this.prisma.user.findFirst({
+          where: {
+            emergency_contact,
+            NOT: { id }, // Exclude the current user
+          },
+        });
+        if (existingEmergencyContact) {
+          return {
+            message: 'Emergency contact is already in use',
+            success: false,
+            error: 'EMERGENCY_CONTACT_ALREADY_EXISTS',
+            user: null,
+          };
+        }
+      }
+
+      // Update the user with provided fields
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: {
+          first_name,
+          last_name,
           contact_email,
-          NOT: { id }, // Exclude the current user
-        },
-      });
-      if (existingEmail) {
-        throw new Error('Contact email is already in use');
-      }
-    }
-
-    // Validate emergency_contact uniqueness if provided and not null
-    if (emergency_contact !== undefined && emergency_contact !== null) {
-      const existingEmergencyContact = await this.prisma.user.findFirst({
-        where: {
           emergency_contact,
-          NOT: { id }, // Exclude the current user
+          address,
         },
       });
-      if (existingEmergencyContact) {
-        throw new Error('Emergency contact is already in use');
-      }
+
+      await this.prisma.otp.update({
+        where: {
+          phone_no: user.phone_no,
+        },
+        data: {
+          emergency_contact,
+        },
+      });
+
+      return {
+        user,
+        message: 'User updated successfully',
+        success: true,
+      };
+    } catch (error: unknown) {
+      const error_message =
+        error instanceof Error ? error.message : 'UNKNOWN_ERROR';
+      return {
+        message: 'An error occurred while updating user',
+        success: false,
+        error: error_message,
+        user: null,
+      };
     }
-
-    // Update the user with provided fields
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: {
-        first_name,
-        last_name,
-        contact_email,
-        emergency_contact,
-        address,
-      },
-    });
-
-    await this.prisma.otp.update({
-      where: {
-        phone_no: user.phone_no,
-      },
-      data: {
-        emergency_contact,
-      },
-    });
-
-    return user;
   }
 }
