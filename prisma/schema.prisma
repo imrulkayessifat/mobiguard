@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -65,7 +65,7 @@ model Lost {
   phone_no   String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  imei       Imei     @relation("ImeiToLost", fields: [imei_id], references: [id])
+  imei       Imei     @relation("ImeiToLost", fields: [imei_id], references: [id], onDelete: Cascade)
   files      File[]   @relation("LostToFile")
 }
 
@@ -74,7 +74,7 @@ model File {
   url     String
   name    String
   lost_id Int
-  lost    Lost   @relation("LostToFile", fields: [lost_id], references: [id])
+  lost    Lost   @relation("LostToFile", fields: [lost_id], references: [id], onDelete: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }

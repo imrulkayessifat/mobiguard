@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
-import { UserInputError } from '@nestjs/apollo';
-
 @Injectable()
 export class ImeiService {
   constructor(private prisma: PrismaService) {}
@@ -13,9 +11,27 @@ export class ImeiService {
     model: string;
     user_id: number;
   }) {
-    return await this.prisma.imei.create({
+    const exist = await this.prisma.imei.findUnique({
+      where: {
+        imei_number: data.imei_number,
+      },
+    });
+    if (exist) {
+      return {
+        imei: null,
+        message: 'This IMEI is already registered.',
+        success: false,
+        error: 'IMEI_ALREADY_EXISTS',
+      };
+    }
+    const imei = await this.prisma.imei.create({
       data,
     });
+    return {
+      imei: imei,
+      message: 'IMEI registered successfully.',
+      success: true,
+    };
   }
 
   async findImeisByUserId(user_id: number) {
@@ -42,17 +58,42 @@ export class ImeiService {
     });
 
     if (!imei) {
-      throw new UserInputError(`Imei #${imei_number} does not exist`);
+      return {
+        message: `Imei #${imei_number} does not exist`,
+        success: false,
+        error: 'IMEI_NOT_EXIST',
+        imei: null,
+      };
     }
 
-    return imei;
+    return {
+      message: 'IMEI matched. Device information retrieved',
+      success: true,
+      imei: imei,
+    };
   }
 
   async remove(id: number) {
-    return await this.prisma.imei.delete({
-      where: {
-        id,
-      },
-    });
+    try {
+      const imei = await this.prisma.imei.delete({
+        where: {
+          id,
+        },
+      });
+      return {
+        imei: imei,
+        message: 'Device deleted successfully.',
+        success: true,
+      };
+    } catch (error: unknown) {
+      const error_message =
+        error instanceof Error ? error.message : 'UNKNOWN_ERROR';
+      return {
+        imei: null,
+        success: false,
+        message: 'An error occurred while removing imei',
+        error: error_message,
+      };
+    }
   }
 }

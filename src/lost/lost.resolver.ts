@@ -3,6 +3,7 @@ import { UseGuards } from '@nestjs/common';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
 
 import { Lost, Flag } from './dto/lost.dto';
+import { LostResponse } from './dto/lost-response.dto';
 import { LostService } from './lost.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
@@ -10,7 +11,7 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 export class LostResolver {
   constructor(private lostService: LostService) {}
 
-  @Mutation(() => Lost, { name: 'createLost' })
+  @Mutation(() => LostResponse, { name: 'createLost' })
   @UseGuards(JwtAuthGuard)
   async createLost(
     @Args('gd_number') gd_number: string,
@@ -37,7 +38,7 @@ export class LostResolver {
     return await this.lostService.findLostsByImeiId(imei_id);
   }
 
-  @Query(() => Lost)
+  @Query(() => LostResponse)
   @UseGuards(JwtAuthGuard)
   async updateFlag(
     @Args('id', { type: () => Int }) id: number,

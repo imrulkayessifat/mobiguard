@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/await-thenable */
 import * as path from 'path';
 import * as fs from 'fs/promises';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { Flag } from './dto/lost.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -25,59 +25,80 @@ export class LostService {
     const sanitizedPhoneNo = data.phone_no.replace(/[^a-zA-Z0-9]/g, '');
     const uploadDir = path.join(process.cwd(), 'uploads', sanitizedPhoneNo);
 
-    await fs.mkdir(uploadDir, { recursive: true });
+    try {
+      await fs.mkdir(uploadDir, { recursive: true });
 
-    const fileRecords = files?.length
-      ? await Promise.all(
-          files.map(async (documents) => {
-            try {
-              const file = await documents;
+      const fileRecords: {
+        url: string;
+        name: string;
+      }[] = [];
 
-              if (!file?.filename) {
-                throw new BadRequestException(
-                  'Invalid file in upload - missing filename',
-                );
-              }
+      if (files?.length) {
+        for (const documents of files) {
+          try {
+            const file = await documents;
 
-              const fileName = `${Date.now()}-${file.filename}`;
-              const filePath = path.join(uploadDir, fileName);
-
-              // Create a write stream to save the file
-              const writeStream = createWriteStream(filePath);
-
-              // Pipe the file stream to the write stream
-              file.createReadStream().pipe(writeStream);
-
-              // Wait for the stream to finish
-              await finished(writeStream);
-
+            if (!file?.filename) {
               return {
-                url: `uploads/${sanitizedPhoneNo}/${fileName}`,
-                name: file.filename,
+                lost: null,
+                message: 'Invalid file in upload - missing filename',
+                success: false,
+                error: 'MISSING_FILENAME',
               };
-            } catch (error) {
-              throw new BadRequestException(
-                `Failed to process file: ${error instanceof Error ? error.message : 'Unknown error'}`,
-              );
             }
-          }),
-        )
-      : [];
 
-    return this.prisma.lost.create({
-      data: {
-        gd_number: data.gd_number,
-        phone_no: data.phone_no,
-        flag: data.flag,
-        imei_id: data.imei_id,
-        files: {
-          create: fileRecords,
+            const fileName = `${Date.now()}-${file.filename}`;
+            const filePath = path.join(uploadDir, fileName);
+
+            const writeStream = createWriteStream(filePath);
+            file.createReadStream().pipe(writeStream);
+            await finished(writeStream);
+
+            fileRecords.push({
+              url: `uploads/${sanitizedPhoneNo}/${fileName}`,
+              name: file.filename,
+            });
+          } catch (error) {
+            return {
+              lost: null,
+              message: `Failed to process file: ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`,
+              success: false,
+              error: 'FILE_UPLOAD_FAILED',
+            };
+          }
+        }
+      }
+
+      const lost = await this.prisma.lost.create({
+        data: {
+          gd_number: data.gd_number,
+          phone_no: data.phone_no,
+          flag: data.flag,
+          imei_id: data.imei_id,
+          files: {
+            create: fileRecords,
+          },
         },
-      },
-      include: {
-        files: true,
-      },
-    });
+        include: {
+          files: true,
+        },
+      });
+
+      return {
+        lost,
+        message: 'Lost data created successfully.',
+        success: true,
+      };
+    } catch (err) {
+      return {
+        lost: null,
+        message: err instanceof Error ? err.message : 'Something went wrong',
+        success: false,
+        error: 'CREATE_LOST_FAILED',
+      };
+    }
   }
 
   async findLostsByImeiId(imei_id: number) {
@@ -87,7 +108,7 @@ export class LostService {
   }
 
   async update(id: number, flag: Flag) {
-    return await this.prisma.lost.update({
+    const lost = await this.prisma.lost.update({
       where: {
         id,
       },
@@ -98,5 +119,12 @@ export class LostService {
         flag,
       },
     });
+
+    return {
+      message: 'Device marked as recovered.',
+      success: true,
+      error: 'DEVICE_RECOVERED',
+      lost: lost,
+    };
   }
 }
