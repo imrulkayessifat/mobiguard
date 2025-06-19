@@ -6,11 +6,14 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { GqlExecutionContext } from '@nestjs/graphql';
 
+import { GraphQLContext } from './current-user.decorator';
+import { User } from 'src/user/dto/user.dto';
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   getRequest(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context);
-    return ctx.getContext().req;
+    return ctx.getContext<GraphQLContext>().req;
   }
 
   canActivate(context: ExecutionContext) {
@@ -18,10 +21,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context);
   }
 
-  handleRequest(err: any, user: any, info: any) {
+  handleRequest<TUser = User>(err: any, user: any): TUser {
     if (err || !user) {
-      throw err || new UnauthorizedException('Invalid token');
+      throw err || new UnauthorizedException('Invalid or Expired token');
     }
-    return user;
+    return user as TUser;
   }
 }

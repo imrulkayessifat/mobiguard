@@ -92,7 +92,7 @@ type Query {
   lostsByImeiId(imei_id: Int!): [Lost!]!
   updateFlag(flag: String!, id: Int!): LostResponse!
   userByPhoneNo(phone_no: String!): User
-  userImeis(user_id: Int!): [Imei!]!
+  userImeis: [Imei!]!
   validateOtp(otp_code: String!, phone_no: String!): LoginResponse!
 }
 

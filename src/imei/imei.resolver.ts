@@ -6,6 +6,8 @@ import { Imei } from './dto/imei.dto';
 import { ImeiResponse } from './dto/imei-response.dto';
 import { ImeiService } from './imei.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/auth/current-user.decorator';
+import { User } from 'src/user/dto/user.dto';
 
 @Resolver(() => Imei)
 export class ImeiResolver {
@@ -29,8 +31,9 @@ export class ImeiResolver {
 
   @Query(() => [Imei], { name: 'userImeis' })
   @UseGuards(JwtAuthGuard)
-  async imeisByUserId(@Args('user_id', { type: () => Int }) user_id: number) {
-    return await this.imeiService.findImeisByUserId(user_id);
+  async imeisByUserId(@CurrentUser() user: User) {
+    console.log(user);
+    return await this.imeiService.findImeisByUserId(user.id);
   }
 
   @Query(() => ImeiResponse, { name: 'imei' })
