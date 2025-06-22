@@ -4,6 +4,19 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
 
+interface JwtPayload {
+  id: number;
+  first_name: string | null;
+  last_name: string | null;
+  phone_no: string;
+  contact_email: string | null;
+  emergency_contact: string | null;
+  address: string | null;
+  created_at: Date;
+  updated_at: Date;
+  sub: number;
+}
+
 @Injectable()
 export class OtpService {
   constructor(
@@ -66,6 +79,7 @@ export class OtpService {
       if (!otp || otp.otp_code !== otp_code || otp.expire_time < new Date()) {
         return {
           access_token: null,
+          refresh_token: null,
           user: null,
           message: 'Invalid or expired OTP',
           success: false,
@@ -79,6 +93,7 @@ export class OtpService {
       if (!user) {
         return {
           access_token: null,
+          refresh_token: null,
           user: null,
           message: 'User not found',
           success: false,
@@ -92,10 +107,19 @@ export class OtpService {
         ...user,
       };
 
-      const access_token = this.jwtService.sign(payload);
+      const access_token = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '1d',
+      });
+
+      const refresh_token = this.jwtService.sign(payload, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '7d',
+      });
 
       return {
         access_token,
+        refresh_token,
         user,
         message: 'OTP validated successfully',
         success: true,
@@ -106,10 +130,44 @@ export class OtpService {
         error instanceof Error ? error.message : 'UNKNOWN_ERROR';
       return {
         access_token: null,
+        refresh_token: null,
         user: null,
         message: 'An error occurred during OTP validation',
         success: false,
         error: error_message,
+      };
+    }
+  }
+
+  async refreshToken(refresh_token: string) {
+    try {
+      const payload = this.jwtService.verify<JwtPayload>(refresh_token, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const user = await this.userService.findUserByPhoneNo(payload.phone_no);
+
+      if (!user) {
+        return {
+          access_token: null,
+          success: false,
+          user: null,
+          error: 'INVALID_TOKEN',
+        };
+      }
+
+      const newAccessToken = this.jwtService.sign(
+        { sub: user.id },
+        { secret: process.env.JWT_ACCESS_SECRET, expiresIn: '15m' },
+      );
+
+      return { access_token: newAccessToken, user: user, success: true };
+    } catch {
+      return {
+        access_token: null,
+        success: false,
+        user: null,
+        error: 'TOKEN_EXPIRED',
       };
     }
   }

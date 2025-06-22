@@ -32,7 +32,6 @@ export class ImeiResolver {
   @Query(() => [Imei], { name: 'userImeis' })
   @UseGuards(JwtAuthGuard)
   async imeisByUserId(@CurrentUser() user: User) {
-    console.log(user);
     return await this.imeiService.findImeisByUserId(user.id);
   }
 

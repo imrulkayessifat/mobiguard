@@ -44,6 +44,7 @@ type LoginResponse {
   access_token: String
   error: String
   message: String!
+  refresh_token: String
   success: Boolean!
   user: User
 }
@@ -72,6 +73,7 @@ type Mutation {
   createLost(files: [Upload!], flag: String!, gd_number: String!, imei_id: Int!, phone_no: String!): LostResponse!
   createOtp(phone_no: String!): Otp!
   createUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, last_name: String!, phone_no: String!): User!
+  refreshToken(refresh_token: String!): TokenResponse!
   removeImei(id: Float!): ImeiResponse!
   updateUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, id: Float!, last_name: String!): UserResponse!
 }
@@ -94,6 +96,13 @@ type Query {
   userByPhoneNo(phone_no: String!): User
   userImeis: [Imei!]!
   validateOtp(otp_code: String!, phone_no: String!): LoginResponse!
+}
+
+type TokenResponse {
+  access_token: String
+  error: String
+  success: Boolean!
+  user: User
 }
 
 """The `Upload` scalar type represents a file upload."""

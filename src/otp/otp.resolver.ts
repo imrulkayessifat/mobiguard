@@ -3,6 +3,7 @@ import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { Otp } from './dto/otp.dto';
 import { OtpService } from './otp.service';
 import { LoginResponse } from './dto/login-response.dto';
+import { TokenResponse } from './dto/token-response.dto';
 
 @Resolver(() => Otp)
 export class OtpResolver {
@@ -11,6 +12,11 @@ export class OtpResolver {
   @Mutation(() => Otp, { name: 'createOtp' })
   async createOtp(@Args('phone_no') phone_no: string) {
     return await this.otpService.createOtp(phone_no);
+  }
+
+  @Mutation(() => TokenResponse, { name: 'refreshToken' })
+  async refreshToken(@Args('refresh_token') refresh_token: string) {
+    return await this.otpService.refreshToken(refresh_token);
   }
 
   @Query(() => LoginResponse)
