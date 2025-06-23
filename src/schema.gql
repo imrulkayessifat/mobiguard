@@ -69,7 +69,7 @@ type LostResponse {
 
 type Mutation {
   createFile(lost_id: Int!, name: String!, url: String!): File!
-  createImei(brand: String!, imei_number: String!, model: String!, user_id: Int!): ImeiResponse!
+  createImei(brand: String!, imei_number: String!, model: String!): ImeiResponse!
   createLost(files: [Upload!], flag: String!, gd_number: String!, imei_id: Int!, phone_no: String!): LostResponse!
   createOtp(phone_no: String!): Otp!
   createUser(address: String!, contact_email: String!, emergency_contact: String!, first_name: String!, last_name: String!, phone_no: String!): User!

@@ -1,11 +1,13 @@
-import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { FileUpload, GraphQLUpload } from 'graphql-upload';
+import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
 
 import { Lost, Flag } from './dto/lost.dto';
-import { LostResponse } from './dto/lost-response.dto';
 import { LostService } from './lost.service';
+import { User } from 'src/user/dto/user.dto';
+import { LostResponse } from './dto/lost-response.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { CurrentUser } from 'src/auth/current-user.decorator';
 
 @Resolver(() => Lost)
 export class LostResolver {
@@ -14,6 +16,7 @@ export class LostResolver {
   @Mutation(() => LostResponse, { name: 'createLost' })
   @UseGuards(JwtAuthGuard)
   async createLost(
+    @CurrentUser() user: User,
     @Args('gd_number') gd_number: string,
     @Args('phone_no') phone_no: string,
     @Args('flag') flag: Flag,
@@ -27,6 +30,7 @@ export class LostResolver {
         phone_no,
         flag,
         imei_id,
+        user_id: user.id,
       },
       files || [],
     );

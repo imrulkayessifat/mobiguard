@@ -43,6 +43,7 @@ model User {
   otpByPhone        Otp?     @relation("PhoneNoRelation")
   otpByEmergency    Otp?     @relation("EmergencyContactRelation")
   imeis             Imei[]
+  losts             Lost[]
 }
 
 model Imei {
@@ -63,18 +64,20 @@ model Lost {
   flag       Flag     @default(FOUND)
   gd_number  String
   phone_no   String
+  user_id    Int
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   imei       Imei     @relation("ImeiToLost", fields: [imei_id], references: [id], onDelete: Cascade)
   files      File[]   @relation("LostToFile")
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model File {
-  id      Int    @id @default(autoincrement())
-  url     String
-  name    String
-  lost_id Int
-  lost    Lost   @relation("LostToFile", fields: [lost_id], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  url        String
+  name       String
+  lost_id    Int
+  lost       Lost     @relation("LostToFile", fields: [lost_id], references: [id], onDelete: Cascade)
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }

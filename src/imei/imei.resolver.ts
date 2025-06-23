@@ -1,4 +1,4 @@
-import { Resolver, Mutation, Args, Query, Int } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Query } from '@nestjs/graphql';
 import { ParseIntPipe } from '@nestjs/common';
 import { UseGuards } from '@nestjs/common';
 
@@ -19,13 +19,13 @@ export class ImeiResolver {
     @Args('imei_number') imei_number: string,
     @Args('brand') brand: string,
     @Args('model') model: string,
-    @Args('user_id', { type: () => Int }) user_id: number,
+    @CurrentUser() user: User,
   ) {
     return await this.imeiService.createImei({
       imei_number,
       brand,
       model,
-      user_id,
+      user_id: user.id,
     });
   }
 

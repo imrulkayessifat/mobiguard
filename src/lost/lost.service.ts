@@ -19,6 +19,7 @@ export class LostService {
       phone_no: string;
       flag: Flag;
       imei_id: number;
+      user_id: number;
     },
     files?: FileUpload[],
   ) {
@@ -77,6 +78,7 @@ export class LostService {
           phone_no: data.phone_no,
           flag: data.flag,
           imei_id: data.imei_id,
+          user_id: data.user_id,
           files: {
             create: fileRecords,
           },
