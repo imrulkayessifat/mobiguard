@@ -54,6 +54,7 @@ export class ImeiService {
       },
       include: {
         user: true,
+        losts: true,
       },
     });
 
