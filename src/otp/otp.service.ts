@@ -28,8 +28,14 @@ export class OtpService {
   async createOtp(phone_no: string) {
     const user = await this.userService.findUserByPhoneNo(phone_no);
     const otp_code = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
-    const expire_time = new Date(Date.now() + 30 * 1000); // 30 seconds from now
+    const expire_time = new Date(Date.now() + 60 * 1000); // 60 seconds from now
 
+    const sentOtp = await fetch(
+      `https://api.mobireach.com.bd/SendTextMessage?Username=asdev1&Password=Dhaka@5599&From=8801841504032&To=${phone_no}&Message=${otp_code}`,
+    );
+    if (sentOtp.status !== 200) {
+      throw new Error('Otp does not sent!');
+    }
     if (!user) {
       await this.userService.createUser({ phone_no });
       return await this.prisma.otp.create({
