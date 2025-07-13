@@ -4,6 +4,7 @@ import { File } from 'src/file/dto/file.dto';
 export enum Flag {
   LOST = 'LOST',
   FOUND = 'FOUND',
+  STOLEN = 'STOLEN',
 }
 
 // Register the enum with GraphQL
