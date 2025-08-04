@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { Logger } from '@nestjs/common';
+
+const logger = new Logger('YourServiceName');
 
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -36,7 +39,7 @@ export class OtpService {
     if (sentOtp.status !== 200) {
       throw new Error('Otp does not sent!');
     }
-    console.log('Send Otp : ', sentOtp);
+    logger.log('Send Otp : ', sentOtp);
     if (!user) {
       await this.userService.createUser({ phone_no });
       return await this.prisma.otp.create({
@@ -49,7 +52,7 @@ export class OtpService {
     }
 
     const res = await this.updateOtp(phone_no, otp_code, expire_time);
-    console.log('Response : ', phone_no, res);
+    logger.log('Response : ', phone_no, res);
   }
 
   async updateOtp(phone_no: string, otp_code: string, expire_time: Date) {
