@@ -52,7 +52,9 @@ export class OtpService {
     }
 
     const res = await this.updateOtp(phone_no, otp_code, expire_time);
-    logger.log('Response : ', phone_no, res);
+    logger.log('phone_no : ', phone_no);
+    logger.log('response : ', res);
+    return res;
   }
 
   async updateOtp(phone_no: string, otp_code: string, expire_time: Date) {
