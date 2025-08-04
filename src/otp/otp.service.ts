@@ -36,6 +36,7 @@ export class OtpService {
     if (sentOtp.status !== 200) {
       throw new Error('Otp does not sent!');
     }
+    console.log('Send Otp : ', sentOtp);
     if (!user) {
       await this.userService.createUser({ phone_no });
       return await this.prisma.otp.create({
@@ -47,7 +48,8 @@ export class OtpService {
       });
     }
 
-    return await this.updateOtp(phone_no, otp_code, expire_time);
+    const res = await this.updateOtp(phone_no, otp_code, expire_time);
+    console.log('Response : ', res);
   }
 
   async updateOtp(phone_no: string, otp_code: string, expire_time: Date) {

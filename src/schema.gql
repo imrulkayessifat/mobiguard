@@ -19,6 +19,7 @@ type File {
 enum Flag {
   FOUND
   LOST
+  STOLEN
 }
 
 type Imei {
